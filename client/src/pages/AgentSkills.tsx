@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Save, Trash2, X } from "lucide-react";
 import { api, type Skill, type SkillDraft } from "../lib/api";
@@ -17,6 +17,8 @@ export default function AgentSkills() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<SkillDraft>(EMPTY_DRAFT);
   const [formError, setFormError] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
 
   const skills = useQuery({
     queryKey: ["/api/skills"],
@@ -52,6 +54,10 @@ export default function AgentSkills() {
       category: skill.category,
     });
     setFormError(null);
+    requestAnimationFrame(() => {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      nameInputRef.current?.focus();
+    });
   }
 
   function cancelEdit() {
@@ -170,6 +176,7 @@ export default function AgentSkills() {
         <Card className="h-fit">
           <SectionLabel step={editingId ? "Edit skill" : "New skill"} title="Add an instruction" />
           <form
+            ref={formRef}
             className="flex flex-col gap-4"
             onSubmit={(event) => {
               event.preventDefault();
@@ -182,6 +189,7 @@ export default function AgentSkills() {
           >
             <Field label="Name">
               <input
+                ref={nameInputRef}
                 className={inputClass}
                 value={draft.name}
                 onChange={(event) => updateDraft("name", event.target.value)}
